@@ -1,5 +1,4 @@
-🚀 Blog Management System:
-Enterprise-Scale MERN Platform | Secure • Modular • Production-Engineered
+🚀 Blog Management System: Enterprise-Scale MERN Platform | Secure • Modular • Production-Engineered
 
 A professionally engineered full-stack Blog Management System built using the MERN architecture.
 
@@ -26,33 +25,36 @@ Production-aligned development practices
 It demonstrates the capability to build maintainable systems suitable for startups, SaaS platforms, and scalable business applications.
 
 🏗 System Architecture
-client/
- ├── components/
- ├── pages/
- ├── services/
- └── App.js
 
-server/
- ├── controllers/
- ├── models/
- ├── routes/
- ├── middleware/
- └── server.js
+frontend/
+├── admin/
+├── assets/
+├── components/
+├── Layouts/
+├── pages/
+├── services/
+└── App.jsx
+
+Backend/
+├── controllers/
+├── models/
+├── routes/
+├── middleware/
+└── server.js
+
 Architectural Strategy
 
-✔ Layered backend structure
-✔ RESTful API standardization
-✔ Reusable UI component design
-✔ Centralized API communication layer
-✔ Middleware-driven security
-✔ Environment-based configuration isolation
+✔ Layered backend structure ✔ RESTful API standardization ✔ Reusable UI component design ✔ Centralized API communication layer ✔ Middleware-driven security ✔ Environment-based configuration isolation
 
 The system follows separation of concerns to ensure maintainability and future scalability.
 
 💻 Technology Stack
+
 Frontend Engineering Layer
 
 React.js
+
+Vite
 
 Tailwind CSS
 
@@ -97,28 +99,21 @@ Controlled access to sensitive endpoints
 This reflects production-level security design patterns used in modern web applications.
 
 🧩 Core Platform Capabilities
+
 Content Management Lifecycle
 
-✔ Create blog posts
-✔ Retrieve all posts
-✔ View single post details
-✔ Update existing content
-✔ Delete posts
+✔ Create blog posts ✔ Retrieve all posts ✔ View single post details ✔ Update existing content ✔ Delete posts
 
 Secure User System
 
-✔ Authenticated registration
-✔ Secure login
-✔ Protected dashboard access
+✔ Authenticated registration ✔ Secure login ✔ Role-based access control & protected dashboard access
 
 UI / UX Engineering
 
-✔ Fully responsive layout
-✔ Clean content hierarchy
-✔ Structured dashboard design
-✔ Optimized component rendering
+✔ Fully responsive layout ✔ Clean content hierarchy ✔ Structured dashboard design ✔ Optimized component rendering
 
 🧠 Backend Engineering Breakdown
+
 controllers/
 
 Encapsulates business logic and request handling.
@@ -140,6 +135,7 @@ server.js
 Application entry point — initializes Express server, middleware configuration, database connectivity, and runtime environment.
 
 🎨 Frontend Engineering Breakdown
+
 components/
 
 Reusable UI modules for scalability and consistency.
@@ -152,32 +148,40 @@ services/
 
 Centralized API communication layer using Axios abstraction.
 
-App.js
+App.jsx
 
 Core routing and protected route configuration.
 
 🛡 Security & Stability Considerations
 
-🔒 Password encryption before database storage
-🔒 Stateless JWT authentication model
-🔒 Middleware-protected endpoints
-🔒 Environment-based secret management
-🔒 Structured error handling
+🔒 Password encryption before database storage 🔒 Stateless JWT authentication model 🔒 Middleware-protected endpoints 🔒 Environment-based secret management 🔒 Structured error handling
 
 The system is structured to support future enhancements such as role-based access control and rate limiting.
 
 ⚙ Development Setup
+
 Clone Repository
-git clone https://github.com/AsadLakho/blog-management-system.gitInstall Backend Dependencies
-cd server
+
+git clone https://github.com/Veerendra9826/codecraft-hub.git
+
+Install Backend Dependencies
+
+cd Backend
 npm install
+
 Install Frontend Dependencies
-cd client
+
+cd frontend
 npm install
+
 Run Backend
+
 npm run dev
+
 Run Frontend
-npm start
+
+npm run dev
+
 📈 Engineering Competencies Demonstrated
 
 🚀 Full-Stack MERN Architecture Design
@@ -208,16 +212,6 @@ Deployment is currently pending and can be executed without architectural change
 
 👨‍💻 Author
 
-Asad Ali Lakho
+Veerendra Singh Rajput
 Full-Stack MERN Developer
-Hyderabad, Pakistan
-
-Open to:
-
-Remote International Roles
-
-Onsite Opportunities
-
-Enterprise & Startup Engagements
-
-Freelance Contracts Worldwide
+GitHub: https://github.com/Veerendra9826
