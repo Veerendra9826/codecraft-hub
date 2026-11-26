@@ -1,97 +1,35 @@
-import { Link, useNavigate } from "react-router-dom";
-import { FaBlog, FaSignOutAlt } from "react-icons/fa"; // FontAwesome icons
+import { Link } from "react-router-dom";
+import { FaArrowRight, FaBookOpen, FaSignOutAlt } from "react-icons/fa";
 
-export default function UserNavbar() {
-  const navigate = useNavigate();
-
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    navigate("/login");
-  };
-
-  const linkStyle = {
-    textDecoration: "none",
-    color: "white",
-    fontWeight: "500",
-    fontFamily: "'Poppins', sans-serif",
-    padding: "10px 16px",
-    borderRadius: "8px",
-    display: "flex",
-    alignItems: "center",
-    gap: "6px",
-    transition: "all 0.3s ease",
-  };
-
-  const linkHover = (e) => {
-    e.target.style.background = "rgba(255,255,255,0.2)";
-    e.target.style.transform = "scale(1.05)";
-  };
-
-  const linkLeave = (e) => {
-    e.target.style.background = "transparent";
-    e.target.style.transform = "scale(1)";
-  };
-
+export default function UserNavbar({ isAuthenticated, onOpenAuth, onLogout }) {
   return (
-    <nav
-      style={{
-        background: "#5f22c1",
-        color: "white",
-        padding: "12px 24px",
-        boxShadow: "0 4px 12px rgba(0,0,0,0.25)",
-        position: "sticky",
-        top: 0,
-        zIndex: 50,
-      }}
-    >
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          maxWidth: "1200px",
-          margin: "0 auto",
-        }}
-      >
-        {/* Logo */}
-        <h1 style={{ fontSize: "22px", fontWeight: "bold", display: "flex", alignItems: "center", gap: "8px" }}>
-          <FaBlog /> Blog Management
-        </h1>
+    <header className="site-header">
+      <nav className="nav-inner" aria-label="Main navigation">
+        <Link className="brand" to="/blogs" aria-label="codecraft-hub home">
+          <span className="brand-mark"><FaBookOpen /></span>
+          <span>codecraft<span className="brand-amp">-hub</span></span>
+        </Link>
 
-        {/* Links */}
-        <div style={{ display: "flex", gap: "20px" }}>
-          <Link
-            to="/blogs"
-            style={linkStyle}
-            onMouseEnter={linkHover}
-            onMouseLeave={linkLeave}
-          >
-            <FaBlog /> Blogs
-          </Link>
+        <div className="nav-links">
+          <a href="/blogs#stories">Explore</a>
+          <a href="/blogs#about">About</a>
+        </div>
 
-          <button
-            onClick={handleLogout}
-            style={{
-              ...linkStyle,
-              border: "1px solid white",
-              background: "transparent",
-              cursor: "pointer",
-            }}
-            onMouseEnter={(e) => {
-              e.target.style.background = "white";
-              e.target.style.color = "#5f22c1";
-              e.target.style.transform = "scale(1.05)";
-            }}
-            onMouseLeave={(e) => {
-              e.target.style.background = "transparent";
-              e.target.style.color = "white";
-              e.target.style.transform = "scale(1)";
-            }}
-          >
-            <FaSignOutAlt /> Logout
+        <div className="nav-actions">
+          {isAuthenticated ? (
+            <button className="nav-login" onClick={onLogout} type="button">
+              <FaSignOutAlt /> Sign out
+            </button>
+          ) : (
+            <button className="nav-login" onClick={() => onOpenAuth("login")} type="button">
+              Log in
+            </button>
+          )}
+          <button className="nav-join" onClick={() => onOpenAuth("register")} type="button">
+            Join the community <FaArrowRight />
           </button>
         </div>
-      </div>
-    </nav>
+      </nav>
+    </header>
   );
 }

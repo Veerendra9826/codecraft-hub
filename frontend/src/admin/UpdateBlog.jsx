@@ -1,104 +1,115 @@
 import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
+import { FaArrowLeft, FaArrowRight } from "react-icons/fa";
 import API from "../services/api";
 
 export default function UpdateBlog() {
-  const { id } = useParams(); // blog id from URL
+  const { id } = useParams();
   const navigate = useNavigate();
+  const [blog, setBlog] = useState({ title: "", description: "", tags: "", status: "published" });
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
 
-  const [blog, setBlog] = useState({
-    title: "",
-    description: "",
-    tags: "",
-    status: "published",
-  });
-
-  // Fetch single blog data
   useEffect(() => {
-    const fetchBlog = async () => {
-      try {
-        const res = await API.get(`/admin/blogs/${id}`);
-        const data = res.data;
+    let active = true;
+    API.get(`/admin/blogs/${id}`)
+      .then((response) => {
+        if (!active) return;
+        const data = response.data;
         setBlog({
           title: data.title || "",
           description: data.description || "",
-          tags: data.tags ? data.tags.join(",") : "",
+          tags: Array.isArray(data.tags) ? data.tags.join(", ") : "",
           status: data.status || "published",
         });
-      } catch (error) {
-        console.log("Error fetching blog:", error);
-      }
+      })
+      .catch(() => {
+        if (active) setError("We couldn't find this story. It may have been removed.");
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+
+    return () => {
+      active = false;
     };
-    fetchBlog();
   }, [id]);
 
-  // Handle input changes
-  const handleChange = (e) => {
-    setBlog({ ...blog, [e.target.name]: e.target.value });
+  const handleChange = (event) => {
+    setBlog((currentBlog) => ({ ...currentBlog, [event.target.name]: event.target.value }));
   };
 
-  // Submit update
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    setSaving(true);
+    setError("");
     try {
       await API.put(`/admin/blogs/${id}`, {
-        title: blog.title,
-        description: blog.description,
-        tags: blog.tags.split(",").map((t) => t.trim()),
-        status: blog.status,
+        ...blog,
+        tags: blog.tags.split(",").map((tag) => tag.trim()).filter(Boolean),
       });
-      alert("Blog updated successfully");
-      navigate("/admin/blogs"); // back to AllBlogs page
-    } catch (error) {
-      alert("Failed to update blog");
-      console.log("Update error:", error);
+      navigate("/admin/blogs");
+    } catch (requestError) {
+      setError(requestError.response?.data?.message || "We couldn't save your changes. Please try again.");
+    } finally {
+      setSaving(false);
     }
   };
 
+  if (loading) {
+    return <div className="admin-loading"><span className="loading-dot" /> Opening your story...</div>;
+  }
+
+  if (error && !blog.title && !blog.description) {
+    return (
+      <div className="admin-empty-state" role="alert">
+        <h2>Story unavailable</h2>
+        <p>{error}</p>
+        <Link className="text-link" to="/admin/blogs"><FaArrowLeft /> Back to all stories</Link>
+      </div>
+    );
+  }
+
   return (
-    <div className="max-w-3xl mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-4">Update Blog</h1>
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-        <input
-          type="text"
-          name="title"
-          value={blog.title}
-          onChange={handleChange}
-          placeholder="Blog Title"
-          className="border p-2 rounded"
-        />
-        <textarea
-          name="description"
-          value={blog.description}
-          onChange={handleChange}
-          placeholder="Blog Description"
-          className="border p-2 rounded"
-          rows="5"
-        />
-        <input
-          type="text"
-          name="tags"
-          value={blog.tags}
-          onChange={handleChange}
-          placeholder="Tags (comma separated)"
-          className="border p-2 rounded"
-        />
-        <select
-          name="status"
-          value={blog.status}
-          onChange={handleChange}
-          className="border p-2 rounded"
-        >
-          <option value="published">Published</option>
-          <option value="hidden">Hidden</option>
-        </select>
-        <button
-          type="submit"
-          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-        >
-          Update Blog
-        </button>
+    <section className="admin-page">
+      <Link className="admin-back-link" to="/admin/blogs"><FaArrowLeft /> Back to all stories</Link>
+      <header className="admin-page-heading">
+        <div>
+          <p className="eyebrow">THE WRITING DESK</p>
+          <h1>Edit your story.</h1>
+          <p className="admin-subtitle">Make a few changes and keep the story moving.</p>
+        </div>
+      </header>
+
+      <form className="editor-form" onSubmit={handleSubmit}>
+        {error && <p className="admin-form-message error" role="alert">{error}</p>}
+        <label className="editor-field">
+          Story title
+          <input name="title" value={blog.title} onChange={handleChange} required maxLength={140} />
+        </label>
+        <label className="editor-field">
+          The story
+          <textarea name="description" value={blog.description} onChange={handleChange} rows={12} required />
+        </label>
+        <label className="editor-field">
+          Topics <span className="field-note">Separate topics with commas</span>
+          <input name="tags" value={blog.tags} onChange={handleChange} placeholder="Creativity, culture, technology" />
+        </label>
+        <label className="editor-field">
+          Visibility
+          <select name="status" value={blog.status} onChange={handleChange}>
+            <option value="published">Published</option>
+            <option value="hidden">Hidden</option>
+          </select>
+        </label>
+        <div className="editor-actions">
+          <p>Changes will be saved to this story.</p>
+          <button className="admin-primary-button" type="submit" disabled={saving}>
+            {saving ? "Saving..." : "Save changes"} {!saving && <FaArrowRight />}
+          </button>
+        </div>
       </form>
-    </div>
+    </section>
   );
 }

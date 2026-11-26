@@ -1,87 +1,79 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import { FaArrowRight, FaBookOpen, FaEye, FaPenNib, FaUsers } from "react-icons/fa";
 import API from "../services/api";
+
+const metrics = [
+  { key: "totalBlogs", label: "Total stories", icon: <FaBookOpen />, tone: "terracotta" },
+  { key: "publishedBlogs", label: "Published", icon: <FaEye />, tone: "sage" },
+  { key: "hiddenBlogs", label: "Hidden", icon: <FaPenNib />, tone: "sand" },
+  { key: "totalUsers", label: "Community members", icon: <FaUsers />, tone: "plum" },
+];
 
 export default function Dashboard() {
   const [stats, setStats] = useState(null);
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    fetchStats();
+    let active = true;
+    API.get("/admin/dashboard")
+      .then((response) => {
+        if (active) setStats(response.data);
+      })
+      .catch(() => {
+        if (active) setError("We couldn't load your studio overview. Please refresh and try again.");
+      });
+
+    return () => {
+      active = false;
+    };
   }, []);
 
-  const fetchStats = async () => {
-    try {
-      const res = await API.get("/admin/dashboard");
-      setStats(res.data);
-    } catch (error) {
-      console.log(error);
-    }
-  };
+  if (error) {
+    return <div className="admin-empty-state" role="alert">{error}</div>;
+  }
 
   if (!stats) {
-    return <p style={{ textAlign: "center", marginTop: "40px", fontFamily: "'Poppins', sans-serif" }}>Loading dashboard...</p>;
+    return <div className="admin-loading"><span className="loading-dot" /> Loading your studio...</div>;
   }
 
   return (
-    <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "24px", fontFamily: "'Poppins', sans-serif" }}>
-      <h1 style={{ fontSize: "28px", fontWeight: "bold", marginBottom: "24px", color: "#1f2937" }}>
-        Admin Dashboard
-      </h1>
-
-      {/* Stats Cards */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))", gap: "20px", marginBottom: "30px" }}>
-        <Card title="Total Users" value={stats.totalUsers} color="#2563eb" />
-        <Card title="Total Blogs" value={stats.totalBlogs} color="#059669" />
-        <Card title="Published Blogs" value={stats.publishedBlogs} color="#f59e0b" />
-        <Card title="Hidden Blogs" value={stats.hiddenBlogs} color="#dc2626" />
-      </div>
-
-      {/* Chart Placeholder */}
-      <div style={{ background: "white", boxShadow: "0 4px 10px rgba(0,0,0,0.1)", borderRadius: "12px", padding: "20px", marginBottom: "30px" }}>
-        <h2 style={{ fontSize: "18px", fontWeight: "600", marginBottom: "16px" }}>📊 Blog Activity (Chart)</h2>
-        <div style={{ height: "250px", display: "flex", alignItems: "center", justifyContent: "center", color: "#9ca3af", fontSize: "16px" }}>
-          Chart Placeholder
+    <section className="admin-page">
+      <header className="admin-page-heading">
+        <div>
+          <p className="eyebrow">CODECRAFT-HUB STUDIO</p>
+          <h1>Good to see you.</h1>
+          <p className="admin-subtitle">A little overview of what’s happening with your publication.</p>
         </div>
+        <Link className="admin-primary-button" to="/admin/upload"><FaPenNib /> Write a story</Link>
+      </header>
+
+      <div className="metric-grid">
+        {metrics.map(({ key, label, icon, tone }) => (
+          <article className={`metric-card ${tone}`} key={key}>
+            <div className="metric-card-top">
+              <span>{label}</span>
+              {icon}
+            </div>
+            <strong>{stats[key] ?? 0}</strong>
+            <span className="metric-caption">In your publication</span>
+          </article>
+        ))}
       </div>
 
-      {/* Recent Activity */}
-      <div style={{ background: "white", boxShadow: "0 4px 10px rgba(0,0,0,0.1)", borderRadius: "12px", padding: "20px" }}>
-        <h2 style={{ fontSize: "18px", fontWeight: "600", marginBottom: "16px" }}>🕒 Recent Activity</h2>
-        <ul style={{ listStyle: "none", padding: 0, margin: 0, color: "#374151", fontSize: "15px" }}>
-          <li style={activityItem}>✔️ New blog uploaded by Admin</li>
-          <li style={activityItem}>✔️ User registered successfully</li>
-          <li style={activityItem}>✔️ Blog status updated (Published → Hidden)</li>
-        </ul>
-      </div>
-    </div>
+      <section className="admin-welcome-panel">
+        <div className="welcome-icon"><FaBookOpen /></div>
+        <div className="welcome-copy">
+          <p className="eyebrow">A NOTE FROM YOUR STUDIO</p>
+          <h2>Every good story starts somewhere.</h2>
+          <p>Keep sharing what you’re thinking about. Your readers are just a click away.</p>
+        </div>
+        <div className="welcome-actions">
+          <Link to="/admin/blogs">Manage stories <FaArrowRight /></Link>
+          <Link to="/admin/users">Meet the community <FaArrowRight /></Link>
+        </div>
+        <span className="welcome-decoration" aria-hidden="true">✳</span>
+      </section>
+    </section>
   );
 }
-
-function Card({ title, value, color }) {
-  return (
-    <div
-      style={{
-        background: color,
-        color: "white",
-        borderRadius: "12px",
-        padding: "20px",
-        textAlign: "center",
-        boxShadow: "0 4px 10px rgba(0,0,0,0.2)",
-        transition: "transform 0.3s ease",
-      }}
-      onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.05)")}
-      onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
-    >
-      <h3 style={{ fontSize: "16px", marginBottom: "8px", fontWeight: "500" }}>{title}</h3>
-      <p style={{ fontSize: "28px", fontWeight: "bold" }}>{value}</p>
-    </div>
-  );
-}
-
-/* ✅ Helper Styles */
-const activityItem = {
-  background: "#f3f4f6",
-  padding: "10px 14px",
-  borderRadius: "8px",
-  marginBottom: "8px",
-  transition: "all 0.3s ease",
-};

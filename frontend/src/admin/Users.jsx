@@ -1,93 +1,99 @@
 import { useEffect, useState } from "react";
+import { FaArrowRight, FaUserShield } from "react-icons/fa";
 import API from "../services/api";
 
 export default function Users() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [refreshKey, setRefreshKey] = useState(0);
+  const [busyUserId, setBusyUserId] = useState("");
 
   useEffect(() => {
-    fetchUsers();
-  }, []);
-
-  const fetchUsers = async () => {
-    try {
-      const res = await API.get("/admin/users", {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
+    let active = true;
+    API.get("/admin/users")
+      .then((response) => {
+        if (active) setUsers(Array.isArray(response.data) ? response.data : []);
+      })
+      .catch(() => {
+        if (active) setError("We couldn't load the community. Please try again.");
+      })
+      .finally(() => {
+        if (active) setLoading(false);
       });
-      setUsers(res.data);
-    } catch (error) {
-      alert("Failed to load users");
-    } finally {
-      setLoading(false);
-    }
-  };
 
-  const changeRole = async (id, role) => {
+    return () => {
+      active = false;
+    };
+  }, [refreshKey]);
+
+  const changeRole = async (user) => {
+    const role = user.role === "user" ? "admin" : "user";
+    setBusyUserId(user._id);
+    setError("");
     try {
-      await API.put(
-        `/admin/users/${id}/role`,   // ✅ FIXED: /role added
-        { role },
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        }
-      );
-      fetchUsers();
-    } catch (error) {
-      alert("Failed to update role");
+      await API.put(`/admin/users/${user._id}/role`, { role });
+      setRefreshKey((key) => key + 1);
+    } catch (requestError) {
+      setError(requestError.response?.data?.message || "We couldn't update this member's role.");
+    } finally {
+      setBusyUserId("");
     }
   };
-
-  if (loading) {
-    return <p className="text-center mt-10">Loading users...</p>;
-  }
 
   return (
-    <div className="max-w-6xl mx-auto p-6">
-      <h1 className="text-3xl font-bold mb-6">Users Management</h1>
+    <section className="admin-page">
+      <header className="admin-page-heading">
+        <div>
+          <p className="eyebrow">YOUR COMMUNITY</p>
+          <h1>The people behind the reads.</h1>
+          <p className="admin-subtitle">Manage the members and permissions for your publication.</p>
+        </div>
+        <span className="community-count"><FaUserShield /> {users.length} members</span>
+      </header>
 
-      <div className="overflow-x-auto">
-        <table className="w-full border">
-          <thead className="bg-gray-100">
-            <tr>
-              <th className="border p-3">Name</th>
-              <th className="border p-3">Email</th>
-              <th className="border p-3">Role</th>
-              <th className="border p-3">Action</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {users.map((user) => (
-              <tr key={user._id} className="text-center">
-                <td className="border p-2">{user.name}</td>
-                <td className="border p-2">{user.email}</td>
-                <td className="border p-2">{user.role}</td>
-                <td className="border p-2">
-                  {user.role === "user" ? (
+      {error && <p className="admin-form-message error" role="alert">{error}</p>}
+      {loading ? (
+        <div className="admin-loading"><span className="loading-dot" /> Loading members...</div>
+      ) : users.length ? (
+        <div className="admin-table-wrap">
+          <table className="admin-users-table">
+            <thead>
+              <tr><th>Member</th><th>Email</th><th>Access</th><th>Manage access</th></tr>
+            </thead>
+            <tbody>
+              {users.map((user) => (
+                <tr key={user._id}>
+                  <td>
+                    <div className="member-name">
+                      <span className="member-avatar">{(user.name || "?").trim().charAt(0).toUpperCase()}</span>
+                      <span>{user.name || "Unnamed member"}</span>
+                    </div>
+                  </td>
+                  <td className="member-email">{user.email}</td>
+                  <td><span className={user.role === "admin" ? "role-badge admin" : "role-badge"}>{user.role}</span></td>
+                  <td>
                     <button
-                      onClick={() => changeRole(user._id, "admin")}
-                      className="bg-green-600 text-white px-3 py-1 rounded"
+                      className={user.role === "admin" ? "role-action remove" : "role-action"}
+                      type="button"
+                      onClick={() => changeRole(user)}
+                      disabled={busyUserId === user._id}
                     >
-                      Make Admin
+                      {busyUserId === user._id ? "Updating..." : user.role === "admin" ? "Remove admin" : "Make admin"}
+                      {busyUserId !== user._id && <FaArrowRight />}
                     </button>
-                  ) : (
-                    <button
-                      onClick={() => changeRole(user._id, "user")}
-                      className="bg-red-600 text-white px-3 py-1 rounded"
-                    >
-                      Remove Admin
-                    </button>
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : (
+        <div className="admin-empty-state">
+          <h2>No members yet.</h2>
+          <p>New readers who create an account will appear here.</p>
+        </div>
+      )}
+    </section>
   );
 }

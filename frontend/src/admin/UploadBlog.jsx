@@ -1,74 +1,78 @@
 import { useState } from "react";
+import { FaArrowRight, FaImage, FaPenNib } from "react-icons/fa";
 import API from "../services/api";
 
 export default function UploadBlog() {
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
-  const submitHandler = async (e) => {
-    e.preventDefault();
+  const submitHandler = async (event) => {
+    event.preventDefault();
     setLoading(true);
-
-    const formData = new FormData(e.target);
+    setError("");
+    setSuccess("");
+    const form = event.currentTarget;
 
     try {
-      await API.post("/blogs", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
+      await API.post("/blogs", new FormData(form), {
+        headers: { "Content-Type": "multipart/form-data" },
       });
-
-      alert("Blog uploaded successfully");
-      e.target.reset();
-    } catch (error) {
-      alert(error.response?.data?.message || "Upload failed");
+      form.reset();
+      setSuccess("Your story is live and ready to read.");
+    } catch (requestError) {
+      setError(requestError.response?.data?.message || "We couldn't publish this story. Please try again.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="max-w-3xl mx-auto p-6">
-      <h1 className="text-3xl font-bold mb-6">Upload New Blog</h1>
+    <section className="admin-page">
+      <header className="admin-page-heading">
+        <div>
+          <p className="eyebrow">THE WRITING DESK</p>
+          <h1>Write a new story.</h1>
+          <p className="admin-subtitle">A good title, a clear idea, and your words. That’s all you need.</p>
+        </div>
+        <span className="writing-mark"><FaPenNib /></span>
+      </header>
 
-      <form
-        onSubmit={submitHandler}
-        className="bg-white shadow-md rounded-xl p-6 space-y-4"
-      >
-        <input
-          name="title"
-          placeholder="Blog Title"
-          className="w-full border p-3 rounded"
-          required
-        />
+      <form className="editor-form" onSubmit={submitHandler}>
+        {error && <p className="admin-form-message error" role="alert">{error}</p>}
+        {success && <p className="admin-form-message success" role="status">{success}</p>}
 
-        <textarea
-          name="description"
-          placeholder="Blog Description"
-          className="w-full border p-3 rounded h-32"
-          required
-        />
+        <label className="editor-field">
+          Story title
+          <input name="title" placeholder="Give your story a thoughtful title" required maxLength={140} />
+        </label>
 
-        <input
-          name="tags"
-          placeholder="Tags (comma separated)"
-          className="w-full border p-3 rounded"
-        />
+        <label className="editor-field">
+          The story
+          <textarea name="description" placeholder="Start writing here..." rows={12} required />
+        </label>
 
-        <input
-          type="file"
-          name="image"
-          className="w-full"
-          accept="image/*"
-        />
+        <label className="editor-field">
+          Topics <span className="field-note">Separate topics with commas</span>
+          <input name="tags" placeholder="Creativity, culture, technology" />
+        </label>
 
-        <button
-          type="submit"
-          disabled={loading}
-          className="bg-blue-600 text-white px-6 py-3 rounded hover:bg-blue-700 transition"
-        >
-          {loading ? "Uploading..." : "Upload Blog"}
-        </button>
+        <label className="editor-field">
+          Cover image <span className="field-note">Optional · JPG, PNG, or WebP</span>
+          <span className="file-picker">
+            <FaImage />
+            <span>Choose an image from your device</span>
+            <input type="file" name="image" accept="image/*" />
+          </span>
+        </label>
+
+        <div className="editor-actions">
+          <p>Stories are published immediately and can be edited later.</p>
+          <button className="admin-primary-button" type="submit" disabled={loading}>
+            {loading ? "Publishing..." : "Publish story"} {!loading && <FaArrowRight />}
+          </button>
+        </div>
       </form>
-    </div>
+    </section>
   );
 }

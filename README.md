@@ -1,4 +1,6 @@
-🚀 Blog Management System:
+# codecraft-hub
+
+🚀 Codecraft Hub:
 Enterprise-Scale MERN Platform | Secure • Modular • Production-Engineered
 
 A professionally engineered full-stack Blog Management System built using the MERN architecture.
@@ -205,6 +207,27 @@ Backend cloud services (Render / Railway)
 MongoDB Atlas integration
 
 Deployment is currently pending and can be executed without architectural changes.
+
+## Free Hosting Setup
+
+The public frontend is configured for a static Vercel deployment. For a test or hobby deployment, the API can run as a Render Free web service and MongoDB Atlas can provide the database. Service quotas and plan limits can change, so check the provider pages before deploying.
+
+### Frontend (Vercel)
+
+1. Import this repository into Vercel and set the project root to `frontend`.
+2. Use `npm run build` as the build command and `dist` as the output directory.
+3. Add `VITE_API_URL=https://<your-api-service>.onrender.com/api` to the project's environment variables, then redeploy.
+4. Vercel's `frontend/vercel.json` sends app routes back to the SPA entry point.
+5. To use a custom domain, add a domain you own in the Vercel project's **Settings → Domains**, then set the DNS records requested by Vercel.
+
+### API (Render) and database (MongoDB Atlas)
+
+1. Create a Render Web Service from this repository with `Backend` as its root directory, `npm install` as the build command, and `npm start` as the start command. Select the Free instance for a hobby deployment.
+2. Set `MONGO_URI` to the Atlas connection string and `JWT_SECRET` to a long, unique secret in Render's environment settings.
+3. Copy the Render service URL into the Vercel `VITE_API_URL` value above.
+4. Render Free services can spin down when idle, so the first API request may be slow. Their filesystem is ephemeral: newly uploaded files in `Backend/uploads` are not durable and can be lost when the service restarts or spins down. Use durable external image storage or a host with persistent disks before relying on admin uploads.
+
+Hosting can be free while using provider subdomains. A custom domain can be connected without a hosting upgrade, but registering a normal domain name is usually a separate paid purchase; the domain must be owned and its DNS configured.
 
 👨‍💻 Author
 

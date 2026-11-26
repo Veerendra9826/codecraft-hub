@@ -23,8 +23,34 @@ router.get("/dashboard", authMiddleware, adminMiddleware, async (req, res) => {
 // ✅ Admin Blogs route
 router.get("/blogs", authMiddleware, adminMiddleware, async (req, res) => {
   try {
-    const blogs = await Blog.find().populate("author", "name email");
+    const blogs = await Blog.find();
     res.json(blogs);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+router.get("/blogs/:id", authMiddleware, adminMiddleware, async (req, res) => {
+  try {
+    const blog = await Blog.findById(req.params.id);
+    if (!blog) {
+      return res.status(404).json({ message: "Blog not found" });
+    }
+    res.json(blog);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+router.put("/blogs/:id/status", authMiddleware, adminMiddleware, async (req, res) => {
+  try {
+    const blog = await Blog.findById(req.params.id);
+    if (!blog) {
+      return res.status(404).json({ message: "Blog not found" });
+    }
+    blog.status = blog.status === "published" ? "hidden" : "published";
+    await blog.save();
+    res.json({ message: "Blog status updated", blog });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
